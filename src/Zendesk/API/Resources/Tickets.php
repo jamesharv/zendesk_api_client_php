@@ -49,7 +49,7 @@ class Tickets extends ResourceAbstract
     /**
      * @var array
      */
-    protected $lastAttachments = array();
+    protected $lastAttachments = [];
 
     /**
      * {@inheritdoc}
@@ -58,6 +58,7 @@ class Tickets extends ResourceAbstract
     {
         return [
             'comments' => TicketComments::class,
+            'forms'    => TicketForms::class,
             'tags'     => Tags::class
         ];
     }
@@ -72,7 +73,7 @@ class Tickets extends ResourceAbstract
      * @throws ResponseException
      * @throws \Exception
      */
-    private function _send_get_request($route, array $params = array())
+    private function _send_get_request($route, array $params = [])
     {
         $queryParams = Http::prepareQueryParams(
             $this->client->getSideload($params), $params
@@ -126,7 +127,7 @@ class Tickets extends ResourceAbstract
      *
      * @return mixed
      */
-    public function findMany(array $params = array())
+    public function findMany(array $params = [])
     {
 
         $queryParams = Http::prepareQueryParams($this->client->getSideload($params), $params);
@@ -151,12 +152,12 @@ class Tickets extends ResourceAbstract
      *
      * @return mixed
      */
-    public function findTwicket(array $params = array())
+    public function findTwicket(array $params = [])
     {
         $params = $this->addChainedParametersToParams($params, ['id' => get_class($this)]);
 
-        if (!$this->hasKeys($params, array('id'))) {
-            throw new MissingParametersException(__METHOD__, array('id'));
+        if (!$this->hasKeys($params, ['id'])) {
+            throw new MissingParametersException(__METHOD__, ['id']);
         }
         $endPoint = Http::prepare('channels/twitter/tickets/' . $params['id'] . '/statuses.json' . (is_array($params['comment_ids']) ?
                 '?' . implode(',',
@@ -184,7 +185,7 @@ class Tickets extends ResourceAbstract
     {
         if (count($this->lastAttachments)) {
             $params['comment']['uploads'] = $this->lastAttachments;
-            $this->lastAttachments = array();
+            $this->lastAttachments = [];
         }
 
         return parent::create($params);
@@ -205,10 +206,10 @@ class Tickets extends ResourceAbstract
     {
         if ((!$params['twitter_status_message_id']) || (!$params['monitored_twitter_handle_id'])) {
             throw new MissingParametersException(__METHOD__,
-                array('twitter_status_message_id', 'monitored_twitter_handle_id'));
+                ['twitter_status_message_id', 'monitored_twitter_handle_id']);
         }
         $endPoint = Http::prepare('channels/twitter/tickets.json');
-        $response = Http::send_with_options($this->client, $endPoint, array(self::OBJ_NAME => $params), 'POST');
+        $response = Http::send_with_options($this->client, $endPoint, [self::OBJ_NAME => $params], 'POST');
         if ((!is_object($response)) || ($this->client->getDebug()->lastResponseCode != 201)) {
             throw new ResponseException(__METHOD__,
                 ($this->client->getDebug()->lastResponseCode == 422 ? ' (hint: you can\'t create two tickets from the same tweet)'
@@ -234,7 +235,7 @@ class Tickets extends ResourceAbstract
     {
         if (count($this->lastAttachments)) {
             $updateResourceFields['comment']['uploads'] = $this->lastAttachments;
-            $this->lastAttachments = array();
+            $this->lastAttachments = [];
         }
 
         return parent::update($id, $updateResourceFields);
@@ -255,7 +256,7 @@ class Tickets extends ResourceAbstract
     {
         if (count($this->lastAttachments)) {
             $params['comment']['uploads'] = $this->lastAttachments;
-            $this->lastAttachments = array();
+            $this->lastAttachments = [];
         }
 
         $resourceUpdateName = self::OBJ_NAME_PLURAL;
@@ -334,12 +335,12 @@ class Tickets extends ResourceAbstract
      *
      * @return mixed
      */
-    public function related(array $params = array())
+    public function related(array $params = [])
     {
         $params = $this->addChainedParametersToParams($params, ['id' => get_class($this)]);
 
-        if (!$this->hasKeys($params, array('id'))) {
-            throw new MissingParametersException(__METHOD__, array('id'));
+        if (!$this->hasKeys($params, ['id'])) {
+            throw new MissingParametersException(__METHOD__, ['id']);
         }
 
         return $this->_send_get_request(__FUNCTION__, $params);
@@ -382,8 +383,8 @@ class Tickets extends ResourceAbstract
     {
         $params = $this->addChainedParametersToParams($params, ['id' => get_class($this)]);
 
-        if (!$this->hasKeys($params, array('id'))) {
-            throw new MissingParametersException(__METHOD__, array('id'));
+        if (!$this->hasKeys($params, ['id'])) {
+            throw new MissingParametersException(__METHOD__, ['id']);
         }
 
         return $this->_send_get_request(__FUNCTION__, $params);
@@ -404,8 +405,8 @@ class Tickets extends ResourceAbstract
     {
         $params = $this->addChainedParametersToParams($params, ['id' => get_class($this)]);
 
-        if (!$this->hasKeys($params, array('id'))) {
-            throw new MissingParametersException(__METHOD__, array('id'));
+        if (!$this->hasKeys($params, ['id'])) {
+            throw new MissingParametersException(__METHOD__, ['id']);
         }
 
         return $this->_send_get_request(__FUNCTION__, $params);
@@ -442,7 +443,7 @@ class Tickets extends ResourceAbstract
     public function problemAutoComplete(array $params)
     {
         if (!$params['text']) {
-            throw new MissingParametersException(__METHOD__, array('text'));
+            throw new MissingParametersException(__METHOD__, ['text']);
         }
 
         $response = Http::send_with_options(
@@ -477,7 +478,7 @@ class Tickets extends ResourceAbstract
     public function export(array $params)
     {
         if (!$params['start_time']) {
-            throw new MissingParametersException(__METHOD__, array('start_time'));
+            throw new MissingParametersException(__METHOD__, ['start_time']);
         }
 
         $queryParams = ["start_time" => $params["start_time"]];
@@ -499,10 +500,10 @@ class Tickets extends ResourceAbstract
      *
      * @return Tickets
      */
-    public function attach(array $params = array())
+    public function attach(array $params = [])
     {
-        if (!$this->hasKeys($params, array('file'))) {
-            throw new MissingParametersException(__METHOD__, array('file'));
+        if (!$this->hasKeys($params, ['file'])) {
+            throw new MissingParametersException(__METHOD__, ['file']);
         }
 
         $upload = $this->client->attachments()->upload($params);
